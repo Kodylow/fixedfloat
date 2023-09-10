@@ -12,6 +12,12 @@ pub struct ApplicationSettings {
     pub host: String,
 }
 
+impl ApplicationSettings {
+    pub fn addr(&self) -> String {
+        format!("{}:{}", self.host, self.port)
+    }
+}
+
 #[derive(serde::Deserialize)]
 pub struct DatabaseSettings {
     pub username: String,

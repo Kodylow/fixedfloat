@@ -1,24 +1,13 @@
-use crate::model;
-
 pub type Result<T> = core::result::Result<T, Error>;
 
 #[derive(Debug)]
 pub enum Error {
-	// -- Config
-	ConfigMissingEnv(&'static str),
-	ConfigWrongFormat(&'static str),
+	// -- Time
+	DateFailParse(String),
 
-	// -- Modules
-	Model(model::Error),
+	// -- Base64
+	FailToB64uDecode,
 }
-
-// region:    --- Froms
-impl From<model::Error> for Error {
-	fn from(val: model::Error) -> Self {
-		Self::Model(val)
-	}
-}
-// endregion: --- Froms
 
 // region:    --- Error Boilerplate
 impl core::fmt::Display for Error {

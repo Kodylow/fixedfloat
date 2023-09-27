@@ -11,6 +11,8 @@ target/
 # (commit Cargo.lock for real project)
 Cargo.lock
 
+.cargo/config.toml
+
 
 # -- Safety net
 dist/

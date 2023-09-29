@@ -1,10 +1,10 @@
-use super::error::AppError;
 use crate::clients::fixedfloat::models::CreateOrderRequest as FixedFloatCreateOrderRequest;
 use crate::clients::FixedFloat;
 use crate::config;
 use crate::ctx::Ctx;
 use crate::model::user::{UserBmc, UserForCreate, UserForInsert, UserForLogin};
 use crate::model::ModelManager;
+use crate::web::error::AppError;
 use crate::web::models::{
 	CreateOrderRequest, ExchangeRateRequest, OrderDetailsRequest,
 };
@@ -16,6 +16,8 @@ use serde::Deserialize;
 use serde_json::{json, Value};
 use tower_cookies::{Cookie, Cookies};
 use tracing::{debug, error, info};
+
+mod supported_currencies;
 
 pub fn routes(mm: ModelManager) -> Router {
 	Router::new()

@@ -14,8 +14,8 @@ pub use anyhow::{Error, Result};
 pub use config::config;
 
 use crate::model::ModelManager;
+use crate::web::routes;
 
-use crate::web::{routes_fixedfloat, routes_static, routes_utils};
 use axum::response::Html;
 use axum::routing::get;
 use axum::{middleware, Router};
@@ -41,14 +41,18 @@ async fn main() -> Result<()> {
 	)
 	.await;
 
+	let currencies = fixed_float.get_available_currencies().await.unwrap();
+	println!("{:?}", currencies);
+	panic!();
+
 	// Initialize ModelManager.
 	let mm = ModelManager::new().await?;
 
 	let routes_all = Router::new()
-		.merge(routes_fixedfloat::routes(mm.clone()))
-		.merge(routes_utils::routes(mm.clone()))
+		.merge(routes::fixedfloat::routes(mm.clone()))
+		.merge(routes::utils::routes(mm.clone()))
 		// .layer(middleware::map_response(mw_reponse_map))
-		.fallback_service(routes_static::serve_dir());
+		.fallback_service(routes::static_files::serve_dir());
 
 	// region:    --- Start Server
 	let addr = SocketAddr::from(([127, 0, 0, 1], 8080));

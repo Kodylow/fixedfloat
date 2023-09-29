@@ -2,27 +2,24 @@
 
 // region:    --- Modules
 
+mod clients;
 mod config;
-mod crypt;
 mod ctx;
-mod error;
 mod log;
 mod model;
 mod utils;
 mod web;
-// #[cfg(test)] // Commented during early development.
-pub mod _dev_utils;
 
-pub use self::error::{Error, Result};
+pub use anyhow::{Error, Result};
 pub use config::config;
 
 use crate::model::ModelManager;
-use crate::web::mw_auth::{mw_ctx_require, mw_ctx_resolve};
-use crate::web::mw_res_map::mw_reponse_map;
-use crate::web::{routes_login, routes_static, rpc};
+
+use crate::web::{routes_fixedfloat, routes_static, routes_utils};
 use axum::response::Html;
 use axum::routing::get;
 use axum::{middleware, Router};
+use clients::fixedfloat::client::FixedFloat;
 use std::net::SocketAddr;
 use tower_cookies::CookieManagerLayer;
 use tracing::info;
@@ -38,22 +35,19 @@ async fn main() -> Result<()> {
 		.with_env_filter(EnvFilter::from_default_env())
 		.init();
 
-	// -- FOR DEV ONLY
-	_dev_utils::init_dev().await;
+	let fixed_float = FixedFloat::new(
+		&config().FIXEDFLOAT_API_KEY,
+		&config().FIXEDFLOAT_API_SECRET,
+	)
+	.await;
 
 	// Initialize ModelManager.
 	let mm = ModelManager::new().await?;
 
-	// -- Define Routes
-	let routes_rpc =
-		rpc::routes(mm.clone()).route_layer(middleware::from_fn(mw_ctx_require));
-
 	let routes_all = Router::new()
-		.merge(routes_login::routes(mm.clone()))
-		.nest("/api", routes_rpc)
-		.layer(middleware::map_response(mw_reponse_map))
-		.layer(middleware::from_fn_with_state(mm.clone(), mw_ctx_resolve))
-		.layer(CookieManagerLayer::new())
+		.merge(routes_fixedfloat::routes(mm.clone()))
+		.merge(routes_utils::routes(mm.clone()))
+		// .layer(middleware::map_response(mw_reponse_map))
 		.fallback_service(routes_static::serve_dir());
 
 	// region:    --- Start Server
@@ -67,3 +61,41 @@ async fn main() -> Result<()> {
 
 	Ok(())
 }
+
+// // Initialize the FixedFloat client
+// let fixed_float = FixedFloat::new(
+// 	config().FIXEDFLOAT_API_KEY.to_string(),
+// 	config().FIXEDFLOAT_API_SECRET.to_string(),
+// )
+// .await;
+
+// Get the available currencies
+// let currencies = fixed_float.get_available_currencies().await.unwrap();
+// println!("{:?}", currencies);
+
+// let exchange_rate_usdceth_to_btcln = fixed_float
+// 	.get_exchange_rate_usdceth_to_btcln("1.0".to_string())
+// 	.await
+// 	.unwrap();
+// println!(
+// 	"Exchange Rate USDCETH -> BTCLN {:?}",
+// 	exchange_rate_usdceth_to_btcln
+// );
+// let exchange_rate_btcln_to_usdceth = fixed_float
+// 	.get_exchange_rate_btcln_to_usdceth("1.0".to_string())
+// 	.await
+// 	.unwrap();
+// println!(
+// 	"Exchange Rate BTCLN -> USDCETH {:?}",
+// 	exchange_rate_btcln_to_usdceth
+// );
+
+// let create_order_result = fixed_float
+// 	.create_order_btcln_to_usdceth(
+// 		"0.001".to_string(),
+// 		"0x18241de74E1B36e80f91082ec1Ca1987f4e24d3b",
+// 	)
+// 	.await
+// 	.unwrap();
+
+// println!("Create Order Result {:?}", create_order_result);

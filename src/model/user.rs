@@ -1,8 +1,7 @@
-use crate::crypt::{pwd, EncryptContent};
 use crate::ctx::Ctx;
 use crate::model::base::{self, DbBmc};
 use crate::model::ModelManager;
-use crate::model::{Error, Result};
+use anyhow::{Error, Result};
 use serde::{Deserialize, Serialize};
 use sqlb::{Fields, HasFields};
 use sqlx::postgres::PgRow;
@@ -79,10 +78,7 @@ impl UserBmc {
 
 		let pwd_salt = Uuid::new_v4();
 
-		let pwd = pwd::encrypt_pwd(&EncryptContent {
-			content: pwd_clear.to_string(),
-			salt: pwd_salt.to_string(),
-		})?;
+		let pwd = "test".to_string();
 
 		base::create::<Self, _>(
 			ctx,
@@ -130,10 +126,7 @@ impl UserBmc {
 		let db = mm.db();
 
 		let user: UserForLogin = Self::get(ctx, mm, id).await?;
-		let pwd = pwd::encrypt_pwd(&EncryptContent {
-			content: pwd_clear.to_string(),
-			salt: user.pwd_salt.to_string(),
-		})?;
+		let pwd = "test".to_string();
 
 		sqlb::update()
 			.table(Self::TABLE)
@@ -145,32 +138,3 @@ impl UserBmc {
 		Ok(())
 	}
 }
-
-// region:    --- Tests
-#[cfg(test)]
-mod tests {
-	use super::*;
-	use crate::_dev_utils;
-	use anyhow::{Context, Result};
-	use serial_test::serial;
-
-	#[serial]
-	#[tokio::test]
-	async fn test_first_ok_demo() -> Result<()> {
-		// -- Setup & Fixtures
-		let mm = _dev_utils::init_test().await;
-		let ctx = Ctx::root_ctx();
-		let fx_username = "demo";
-
-		// -- Exec
-		let user: User = UserBmc::first_by_username(&ctx, &mm, fx_username)
-			.await?
-			.context("Should have user 'demo'")?;
-
-		// -- Check
-		assert_eq!(user.username, fx_username);
-
-		Ok(())
-	}
-}
-// endregion: --- Tests

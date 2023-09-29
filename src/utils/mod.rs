@@ -1,9 +1,6 @@
 // region:    --- Modules
 
-mod error;
-
-pub use self::error::{Error, Result};
-
+use anyhow::Result;
 use time::format_description::well_known::Rfc3339;
 use time::{Duration, OffsetDateTime};
 
@@ -25,7 +22,7 @@ pub fn now_utc_plus_sec_str(sec: f64) -> String {
 
 pub fn parse_utc(moment: &str) -> Result<OffsetDateTime> {
 	OffsetDateTime::parse(moment, &Rfc3339)
-		.map_err(|_| Error::DateFailParse(moment.to_string()))
+		.map_err(|_| anyhow::anyhow!("Fail to parse time: {moment}"))
 }
 // endregion: --- Time
 
@@ -38,7 +35,7 @@ pub fn b64u_decode(b64u: &str) -> Result<String> {
 	let decoded_string = base64_url::decode(b64u)
 		.ok()
 		.and_then(|r| String::from_utf8(r).ok())
-		.ok_or(Error::FailToB64uDecode)?;
+		.ok_or(anyhow::anyhow!("Fail to decode b64u"))?;
 
 	Ok(decoded_string)
 }

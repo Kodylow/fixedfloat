@@ -1,6 +1,5 @@
 use crate::ctx::Ctx;
-use crate::web::{self, ClientError};
-use crate::Result;
+use anyhow::Result;
 use axum::http::{Method, Uri};
 use serde::Serialize;
 use serde_json::{json, Value};
@@ -14,18 +13,19 @@ pub async fn log_request(
 	req_method: Method,
 	uri: Uri,
 	ctx: Option<Ctx>,
-	web_error: Option<&web::Error>,
-	client_error: Option<ClientError>,
+	web_error: Option<anyhow::Error>,
+	client_error: Option<anyhow::Error>,
 ) -> Result<()> {
 	let timestamp = SystemTime::now()
 		.duration_since(UNIX_EPOCH)
 		.unwrap()
 		.as_millis();
 
-	let error_type = web_error.map(|se| se.as_ref().to_string());
-	let error_data = serde_json::to_value(web_error)
-		.ok()
-		.and_then(|mut v| v.get_mut("data").map(|v| v.take()));
+	let error_type = web_error
+		.as_ref()
+		.map(|e| e.to_string())
+		.or_else(|| client_error.as_ref().map(|e| e.to_string()));
+	let error_data = web_error.map(|se| json!(se.to_string()));
 
 	// Create the RequestLogLine
 	let log_line = RequestLogLine {
@@ -37,7 +37,7 @@ pub async fn log_request(
 
 		user_id: ctx.map(|c| c.user_id()),
 
-		client_error_type: client_error.map(|e| e.as_ref().to_string()),
+		client_error_type: client_error.map(|e| e.to_string()),
 
 		error_type,
 		error_data,

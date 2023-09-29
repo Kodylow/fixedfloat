@@ -3,9 +3,8 @@
 
 # Environments variables set for all `cargo ...` commands.
 [env]
-
 # Scope down tracing, to filter out external lib tracing.
-RUST_LOG = "rust_web_app=debug"
+RUST_LOG = "fixedfloat=debug"
 
 # -- Service Environment Variables
 # IMPORTANT: 
@@ -19,6 +18,9 @@ RUST_LOG = "rust_web_app=debug"
 # i.e., Encryption not needed.
 
 SERVICE_DB_URL = "postgres://app_user:app_pwd@localhost/app_db"
+
+SERVICE_FIXEDFLOAT_API_KEY = "4jQr69EgFeiTHhTSnpkvxEgX4aOaXcXJ4M5yARkd"
+SERVICE_FIXEDFLOAT_API_SECRET = "sJL3hP6O29diu35gS8C5IZQpK2mWNkmpetb5702o"
 
 SERVICE_PWD_KEY = "MBi50ZIbvMvbwj0BxwcXIbEE1ekv4MMY2PmIojrDQCaC_L1ZkGCC5aSE3ZELQ7aN9NJY3yPjJibEBkEahilVhw"
 

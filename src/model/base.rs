@@ -1,6 +1,6 @@
 use crate::ctx::Ctx;
 use crate::model::ModelManager;
-use crate::model::{Error, Result};
+use anyhow::{anyhow, Error, Result};
 use sqlb::HasFields;
 use sqlx::postgres::PgRow;
 use sqlx::FromRow;
@@ -41,10 +41,7 @@ where
 		.and_where("id", "=", id)
 		.fetch_optional(db)
 		.await?
-		.ok_or(Error::EntityNotFound {
-			entity: MC::TABLE,
-			id,
-		})?;
+		.ok_or(anyhow!("Entity not found"))?;
 
 	Ok(entity)
 }
@@ -88,10 +85,7 @@ where
 		.await?;
 
 	if count == 0 {
-		Err(Error::EntityNotFound {
-			entity: MC::TABLE,
-			id,
-		})
+		Err(anyhow!("Entity not found"))
 	} else {
 		Ok(())
 	}
@@ -110,10 +104,7 @@ where
 		.await?;
 
 	if count == 0 {
-		Err(Error::EntityNotFound {
-			entity: MC::TABLE,
-			id,
-		})
+		Err(anyhow!("Entity not found"))
 	} else {
 		Ok(())
 	}

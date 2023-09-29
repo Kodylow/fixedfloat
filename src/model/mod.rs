@@ -1,13 +1,12 @@
 // region:    --- Modules
 
 mod base;
-mod error;
 mod store;
 pub mod task;
 pub mod user;
-pub use self::error::{Error, Result};
 
 use crate::model::store::{new_db_pool, Db};
+use anyhow::Result;
 
 // endregion: --- Modules
 

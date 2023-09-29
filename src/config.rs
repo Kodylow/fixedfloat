@@ -21,6 +21,10 @@ pub struct Config {
 	pub TOKEN_KEY: Vec<u8>,
 	pub TOKEN_DURATION_SEC: f64,
 
+	// -- FixedFloat
+	pub FIXEDFLOAT_API_KEY: String,
+	pub FIXEDFLOAT_API_SECRET: String,
+
 	// -- Db
 	pub DB_URL: String,
 
@@ -33,9 +37,12 @@ impl Config {
 		Ok(Config {
 			// -- Crypt
 			PWD_KEY: get_env_b64u_as_u8s("SERVICE_PWD_KEY")?,
-
 			TOKEN_KEY: get_env_b64u_as_u8s("SERVICE_TOKEN_KEY")?,
 			TOKEN_DURATION_SEC: get_env_parse("SERVICE_TOKEN_DURATION_SEC")?,
+
+			// -- FixedFloat
+			FIXEDFLOAT_API_KEY: get_env("SERVICE_FIXEDFLOAT_API_KEY")?,
+			FIXEDFLOAT_API_SECRET: get_env("SERVICE_FIXEDFLOAT_API_SECRET")?,
 
 			// -- Db
 			DB_URL: get_env("SERVICE_DB_URL")?,
@@ -47,14 +54,16 @@ impl Config {
 }
 
 fn get_env(name: &'static str) -> Result<String> {
-	env::var(name).map_err(|_| Error::ConfigMissingEnv(name))
+	env::var(name).map_err(|_| anyhow::anyhow!("Missing env var: {name}"))
 }
 
 fn get_env_parse<T: FromStr>(name: &'static str) -> Result<T> {
 	let val = get_env(name)?;
-	val.parse::<T>().map_err(|_| Error::ConfigWrongFormat(name))
+	val.parse::<T>()
+		.map_err(|_| anyhow::anyhow!("Fail to parse env var: {name}"))
 }
 
 fn get_env_b64u_as_u8s(name: &'static str) -> Result<Vec<u8>> {
-	base64_url::decode(&get_env(name)?).map_err(|_| Error::ConfigWrongFormat(name))
+	base64_url::decode(&get_env(name)?)
+		.map_err(|_| anyhow::anyhow!("Fail to decode b64u env var: {name}"))
 }
